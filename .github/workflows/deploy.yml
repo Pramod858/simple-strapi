@@ -30,17 +30,28 @@ jobs:
             sudo bash nodesource_setup.sh
             sudo apt-get install -y nodejs
             sudo npm install -g yarn
-            
+
+            # Check if Strapi is running
+            if pgrep -f "node /home/$EC2_USER/simple-strapi/node_modules/strapi/bin/strapi.js" > /dev/null; then
+              echo "Strapi is already running. Stopping it."
+              pm2 stop strapi
+            fi
+
             # Run Strapi creation in the background
-            nohup npx create-strapi-app simple-strapi --quickstart > create-strapi.log 2>&1 &
+            echo -e "skip\n" | npx create-strapi-app simple-strapi --quickstart > create-strapi.log 2>&1 &
 
             # Wait a few seconds to ensure the process starts
             sleep 10
 
-            # Check if Strapi is running by looking for the process
+            # Check if Strapi started successfully
             if pgrep -f "node /home/$EC2_USER/simple-strapi/node_modules/strapi/bin/strapi.js" > /dev/null; then
-              echo "Strapi project creation started successfully in the background."
+              echo "Strapi project creation started successfully."
             else
               echo "Failed to start Strapi project creation. Check the log file for details: create-strapi.log"
             fi
+
+            # Start Strapi using PM2
+            cd /home/$EC2_USER/simple-strapi
+            pm2 start npm --name "strapi" -- run start
+            pm2 save
           EOF
