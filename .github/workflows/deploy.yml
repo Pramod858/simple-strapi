@@ -24,10 +24,20 @@ jobs:
         EC2_USER: ${{ secrets.EC2_USER }}
       run: |
         ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+          function wait_for_apt() {
+            while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+              echo "Waiting for apt lock to be released..."
+              sleep 5
+            done
+          }
+
+          wait_for_apt
           sudo apt-get update
+          wait_for_apt
           sudo apt-get install -y curl
           curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
           sudo bash nodesource_setup.sh
+          wait_for_apt
           sudo apt-get install -y nodejs
           sudo npm install -g yarn pm2
 
@@ -45,7 +55,7 @@ jobs:
 
           # Create a new Strapi app
           echo "Creating a new Strapi app..."
-          nohup bash -c "echo -e 'skip\n' | npx create-strapi-app@latest simple-strapi --quickstart &"
+          nohup bash -c "echo -e 'skip\n' | npx create-strapi-app@latest /home/$EC2_USER/simple-strapi --quickstart &"
           sleep 300
 
           cd /home/$EC2_USER/simple-strapi
