@@ -25,10 +25,11 @@ jobs:
       run: |
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
             sudo apt-get update
-            sudo apt-get install -y curl
-            curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
-            sudo bash nodesource_setup.sh
-            sudo apt-get install -y nodejs
-            sudo npm install -g yarn
-            echo -e "skip\n" | npx create-strapi-app simple-strapi --quickstart
+            sudo apt install npm
+            git clone https://github.com/Pramod858/simple-strapi.git
+            cd simple-strapi
+            chmod +x generate_env_var.sh
+            ./generate_env_var.sh
+            npm install
+            nohup npm run develop > strapi.log 2>&1 &
           EOF
