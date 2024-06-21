@@ -29,29 +29,36 @@ jobs:
             curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
             sudo bash nodesource_setup.sh
             sudo apt-get install -y nodejs
-            sudo npm install -g yarn
+            sudo npm install -g yarn pm2
+
+            PROJECT_DIR="/home/$EC2_USER/simple-strapi"
 
             # Check if Strapi is running
-            if pgrep -f "node /home/$EC2_USER/simple-strapi/node_modules/strapi/bin/strapi.js" > /dev/null; then
+            if pgrep -f "node $PROJECT_DIR/node_modules/strapi/bin/strapi.js" > /dev/null; then
               echo "Strapi is already running. Stopping it."
               pm2 stop strapi
             fi
 
-            # Run Strapi creation in the background
-            echo -e "skip\n" | npx create-strapi-app simple-strapi --quickstart > create-strapi.log 2>&1 &
+            # Remove old project directory if it exists
+            if [ -d "$PROJECT_DIR" ]; then
+              rm -rf $PROJECT_DIR
+            fi
+
+            # Create Strapi project in the background
+            echo -e "skip\n" | npx create-strapi-app $PROJECT_DIR --quickstart > create-strapi.log 2>&1 &
 
             # Wait a few seconds to ensure the process starts
-            sleep 10
+            sleep 20
 
             # Check if Strapi started successfully
-            if pgrep -f "node /home/$EC2_USER/simple-strapi/node_modules/strapi/bin/strapi.js" > /dev/null; then
+            if pgrep -f "node $PROJECT_DIR/node_modules/strapi/bin/strapi.js" > /dev/null; then
               echo "Strapi project creation started successfully."
             else
               echo "Failed to start Strapi project creation. Check the log file for details: create-strapi.log"
             fi
 
             # Start Strapi using PM2
-            cd /home/$EC2_USER/simple-strapi
+            cd $PROJECT_DIR
             pm2 start npm --name "strapi" -- run start
             pm2 save
           EOF
