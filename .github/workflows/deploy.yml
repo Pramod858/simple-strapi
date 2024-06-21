@@ -32,4 +32,12 @@ jobs:
             ./generate_env_var.sh
             npm install
             nohup npm run develop > strapi.log 2>&1 &
+            sleep 240
+            # Check if port 1337 is in use
+            if lsof -i:1337 > /dev/null 2>&1; then
+                echo "Service is running on port 1337."
+            else
+                echo "No service running on port 1337."
+                exit 1
+            fi
           EOF
