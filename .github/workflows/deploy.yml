@@ -30,14 +30,28 @@ jobs:
           sudo bash nodesource_setup.sh
           sudo apt-get install -y nodejs
           sudo npm install -g yarn pm2
-          sudo mkdir -p /home/$EC2_USER/simple-strapi
+
           cd /home/$EC2_USER
+
+          # Check if the Strapi service is running
+          if pm2 list | grep -q strapi-app; then
+            echo "Strapi service is running. Stopping and deleting it..."
+            pm2 stop strapi-app
+            pm2 delete strapi-app
+            rm -rf /home/$EC2_USER/simple-strapi
+          else
+            echo "Strapi service is not running."
+          fi
+
+          # Create a new Strapi app
+          echo "Creating a new Strapi app..."
           nohup bash -c "echo -e 'skip\n' | npx create-strapi-app@latest simple-strapi --quickstart &"
-          sleep 5 # Wait for the background process to start
-          cd /home/$EC2_USER/simple-strapi
+          sleep 300
+
+          cd simple-strapi
           pm2 start npm --name "strapi-app" -- run develop
-          echo "Waiting for the service is up and running..."
+          echo "Waiting for the service to be up and running..."
           sleep 300
           echo "Script ran successfully."
-          echo "running on http://localhost:1337/admin"
+          echo "Running on http://localhost:1337/admin"
         EOF
