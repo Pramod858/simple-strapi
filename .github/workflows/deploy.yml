@@ -30,13 +30,12 @@ jobs:
           sudo bash nodesource_setup.sh
           sudo apt-get install -y nodejs
           sudo npm install -g yarn pm2
-          cd /home/$USER
+          cd /home/$EC2_USER
           nohup bash -c "echo -e 'skip\n' | npx create-strapi-app@latest simple-strapi --quickstart &"
           cd simple-strapi
           pm2 start npm --name "strapi-app" -- run develop
+          echo "Waiting for the service is up and running..."
           sleep 300
+          echo "Script ran successfully."
+          echo "running on http://localhost:1337/admin"
         EOF
-    - name: Waiting for script to finish
-      run: |
-        echo "Script ran successfully."
-        echo "running on http://localhost:1337/admin"
