@@ -23,16 +23,24 @@ jobs:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_USER: ${{ secrets.EC2_USER }}
       run: |
-          sudo apt update
-          sudo apt install -y nodejs npm
-          sudo npm install -g pm2
-          git clone https://github.com/username/simple-strapi.git
-          cd simple-strapi
-          chmod +x generate_env_var.sh
-          ./generate_env_var.sh
-          npm install
-          npm run build
-          echo "Waiting for the service to be up and running..."
-          sleep 300
-          echo "Script ran successfully."
-          echo "Running on http://localhost:1337/admin"
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+            sudo apt-get update
+            sudo apt-get install -y curl
+            curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
+            sudo bash nodesource_setup.sh
+            sudo apt-get install -y nodejs
+            sudo npm install -g yarn
+            
+            # Run Strapi creation in the background
+            nohup npx create-strapi-app simple-strapi --quickstart > create-strapi.log 2>&1 &
+
+            # Wait a few seconds to ensure the process starts
+            sleep 10
+
+            # Check if Strapi is running by looking for the process
+            if pgrep -f "node /home/$EC2_USER/simple-strapi/node_modules/strapi/bin/strapi.js" > /dev/null; then
+              echo "Strapi project creation started successfully in the background."
+            else
+              echo "Failed to start Strapi project creation. Check the log file for details: create-strapi.log"
+            fi
+          EOF
