@@ -55,7 +55,7 @@ jobs:
 
           # Create a new Strapi app
           echo "Creating a new Strapi app..."
-          nohup bash -c "echo -e 'skip\n' | npx create-strapi-app@latest /home/$EC2_USER/simple-strapi --quickstart &"
+          nohup bash -c "echo -e 'skip\n' | npx create-strapi-app@latest simple-strapi --quickstart &"
           sleep 300
 
           cd /home/$EC2_USER/simple-strapi
