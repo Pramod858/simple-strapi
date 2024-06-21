@@ -38,7 +38,7 @@ jobs:
             echo "Strapi service is running. Stopping and deleting it..."
             pm2 stop strapi-app
             pm2 delete strapi-app
-            rm -rf /home/$EC2_USER/simple-strapi
+            sudo rm -rf /home/$EC2_USER/simple-strapi
           else
             echo "Strapi service is not running."
           fi
