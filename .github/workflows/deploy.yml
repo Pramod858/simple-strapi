@@ -25,6 +25,23 @@ jobs:
       run: |
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
             sudo apt-get update
+            # Check if port 1337 is in use and kill the process if it is running
+            if lsof -i:1337 > /dev/null 2>&1; then
+                PID=$(lsof -t -i:1337)
+                echo "Killing process on port 1337 with PID $PID"
+                kill -9 $PID
+            else
+                echo "No service running on port 1337."
+            fi
+
+            # Define project directory
+            PROJECT_DIR="/home/ubuntu/simple-strapi"
+
+            # Remove the existing directory if it exists to avoid conflicts
+            if [ -d "$PROJECT_DIR" ]; then
+               sudo rm -rf "$PROJECT_DIR"
+            fi
+            
             sudo apt install npm -y
             git clone https://github.com/Pramod858/simple-strapi.git
             cd simple-strapi
@@ -33,7 +50,8 @@ jobs:
             npm install
             nohup npm run develop > strapi.log 2>&1 &
             sleep 240
-            # Check if port 1337 is in use
+            
+            # Check if the service is running on port 1337
             if lsof -i:1337 > /dev/null 2>&1; then
                 echo "Service is running on port 1337."
             else
