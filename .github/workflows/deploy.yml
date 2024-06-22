@@ -25,7 +25,7 @@ jobs:
       run: |
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
             sudo apt-get update
-            sudo apt install npm
+            sudo apt install npm -y
             git clone https://github.com/Pramod858/simple-strapi.git
             cd simple-strapi
             chmod +x generate_env_var.sh
