@@ -60,7 +60,7 @@ jobs:
           pm2 start npm --name "simple-strapi" -- start
 
           # Check if the service is running on port 1337
-          sleep 60
+          sleep 45
           if lsof -i:1337 > /dev/null 2>&1; then
               echo "Service is running on port 1337."
           else
