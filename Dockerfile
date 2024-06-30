@@ -9,7 +9,7 @@ ENV APP_NAME my-strapi-app
 WORKDIR /usr/src/app
 
 # Install Strapi globally (specify compatible version if needed)
-RUN npm install strapi@latest -g
+# RUN npm install strapi@latest -g
 
 # Copy package.json and package-lock.json to install dependencies
 COPY package*.json ./
